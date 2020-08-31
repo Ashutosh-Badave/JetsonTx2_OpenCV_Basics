@@ -6,6 +6,8 @@ find_package( OpenCV 4.3.0 REQUIRED )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-add_executable(opencv_basics Jetson_camera_launch.cpp)
+add_executable(jetson_camera Jetson_camera_launch.cpp)
+target_link_libraries(jetson_camera ${OpenCV_LIBS})
 
-target_link_libraries(opencv_basics ${OpenCV_LIBS})
+add_executable(GaussianBlur_and_Gradient GaussianBlur_and_Gradient.cpp)
+target_link_libraries(GaussianBlur_and_Gradient ${OpenCV_LIBS})
