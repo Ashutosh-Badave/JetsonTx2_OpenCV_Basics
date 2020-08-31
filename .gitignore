@@ -1,4 +1,4 @@
 
 #ignore below 
-./build
-./idea
+/build
+/.idea
