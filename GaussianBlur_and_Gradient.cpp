@@ -29,36 +29,70 @@ void GuassianSmooth(Mat &img, Mat &result) {
     //8th is what to do with border elements
 }
 
+void GradientSobelFilter(Mat &Gblurred, Mat &result_sobel) {
+    float sobel_x[9] = {-1, 0, +1,
+                        -2, 0, +2,
+                        -1, 0, +1};
+    float sobel_y[9] = {-1, -2, -1,
+                        0, 0, 0,
+                        +1, +2, +1};
+    Mat kernel_x = Mat(3, 3, CV_32F, sobel_x);
+    Mat kernel_y = Mat(3, 3, CV_32F, sobel_y);
+
+    Mat result_x, result_y;
+
+    // Sobel x filter on gaussian blurred
+    filter2D(Gblurred, result_x, -1, kernel_x, cv::Point(-1, -1), 0, cv::BORDER_DEFAULT);
+    // Sobel y filter on gaussian blurred
+    filter2D(Gblurred, result_y, -1, kernel_y, cv::Point(-1, -1), 0, cv::BORDER_DEFAULT);
+
+    // sobel magnitude
+    result_sobel = Gblurred.clone();
+    for (int row = 0; row < result_sobel.rows; row++) {
+        for (int col = 0; col < result_sobel.cols; col++) {
+            result_sobel.at<unsigned char>(row, col) = sqrt(pow(result_x.at<unsigned char>(row, col), 2) +
+                                                            pow(result_y.at<unsigned char>(row, col), 2));
+        }
+    }
+
+
+}
 
 int main() {
     // Loading image from KITTI dataset
     string image_path = "../Data/KITTI/Camera/Data/0000000000.png";
-    Mat img, result, result1;
+    Mat img, result, Gblurred;
     img = imread(image_path);
 
-    //convert it to grayscale
+    //convert to grayscale
     Mat imgGray;
-    cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
+    cvtColor(img, imgGray, COLOR_BGR2GRAY);
 
     if (img.empty()) {
         cout << "Could not read the image: " << image_path << std::endl;
         return 1;
     }
-    // Call for gaussian smooth
+    // Remove below code block to compare gaussiansmooth result
+/*    // Call for gaussian smooth
+
     GuassianSmooth(imgGray, result);
     string windowName = "Gaussian Window";
     imshow(windowName, result);
+*/
+    // Use inbuld gaussian blur function with 5by5 kernel for comparision
+    GaussianBlur(imgGray, Gblurred, {5, 5}, 2);
+    string windowName = "Gaussian Window2";
+    imshow(windowName, Gblurred);
 
-    // Remove below code block to compare gaussiansmooth result
-    /*   // Use inbuld gaussian blur function with 5by5 kernel for comparision
-       GaussianBlur(imgGray, result1, {5, 5}, 0);
-       windowName = "Gaussian Window2";
-       imshow(windowName, result1);
-    */
+    Mat result_sobel;
+    GradientSobelFilter(Gblurred, result_sobel);
+    windowName = "sobel Filter";
+    imshow(windowName, result_sobel);
+
     int k = cv::waitKey(0); // Wait for a keystroke in the window
 
     if (k == 's') {
-        imwrite("KITTI.png", result);
+        imwrite("../Output/sobel_filter.png", result_sobel);
         cout << "Image is saved " << std::endl;
     }
     return 0;
