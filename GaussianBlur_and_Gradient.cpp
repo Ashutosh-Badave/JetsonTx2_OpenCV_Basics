@@ -81,7 +81,7 @@ int main() {
 */
     // Use inbuld gaussian blur function with 5by5 kernel for comparision
     GaussianBlur(imgGray, Gblurred, {5, 5}, 2);
-    string windowName = "Gaussian Window2";
+    string windowName = "Gaussian Window";
     imshow(windowName, Gblurred);
 
     Mat result_sobel;
