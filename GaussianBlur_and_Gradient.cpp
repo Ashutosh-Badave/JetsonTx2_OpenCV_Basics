@@ -19,40 +19,46 @@ void GuassianSmooth(Mat &img, Mat &result) {
                             4, 16, 26, 16, 4,
                             1, 4, 7, 4, 1};
     // created kernel with filter data
-    Mat kernel = cv::Mat(5, 5, CV_32F, gauss_data);
+    Mat kernel = Mat(5, 5, CV_32F, gauss_data);
 
     // apply filter
-    filter2D(img, result, -1, kernel / 273, cv::Point(-1, -1), 0, cv::BORDER_DEFAULT);
+    filter2D(img, result, -1, kernel / 273, Point(-1, -1), 0, BORDER_DEFAULT);
     // only 4 arguments are neccessary for filter2D , other 3 are optional
     //6th is anchor in kernel is center point which shown by cv::Point(-1, -1)
     //7th is to fill target with this value before filter 0
     //8th is what to do with border elements
 }
 
+
 int main() {
     // Loading image from KITTI dataset
     string image_path = "../Data/KITTI/Camera/Data/0000000000.png";
-    cv::Mat img, result, result1;
+    Mat img, result, result1;
+    img = imread(image_path);
 
-    img = imread(image_path, cv::IMREAD_GRAYSCALE);
+    //convert it to grayscale
+    Mat imgGray;
+    cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
 
     if (img.empty()) {
         cout << "Could not read the image: " << image_path << std::endl;
         return 1;
     }
     // Call for gaussian smooth
-    GuassianSmooth(img, result);
-    string windowName = "Gaussian Window1";
+    GuassianSmooth(imgGray, result);
+    string windowName = "Gaussian Window";
     imshow(windowName, result);
 
-    // Use inbuld gaussian blur function with 5by5 kernel for comparision
-    GaussianBlur(img, result1, {5, 5}, 0);
-    windowName = "Gaussian Window2";
-    imshow(windowName, result1);
+    // Remove below code block to compare gaussiansmooth result
+    /*   // Use inbuld gaussian blur function with 5by5 kernel for comparision
+       GaussianBlur(imgGray, result1, {5, 5}, 0);
+       windowName = "Gaussian Window2";
+       imshow(windowName, result1);
+    */
     int k = cv::waitKey(0); // Wait for a keystroke in the window
 
     if (k == 's') {
-        imwrite("KITTI.png", result1);
+        imwrite("KITTI.png", result);
         cout << "Image is saved " << std::endl;
     }
     return 0;
