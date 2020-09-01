@@ -72,7 +72,7 @@ int main() {
         cout << "Could not read the image: " << image_path << std::endl;
         return 1;
     }
-    // Remove below code block to compare gaussiansmooth result
+    // Uncommnent below code block to compare gaussiansmooth result
 /*    // Call for gaussian smooth
 
     GuassianSmooth(imgGray, result);
