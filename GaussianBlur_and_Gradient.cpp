@@ -11,6 +11,9 @@
 using namespace std;
 using namespace cv;
 
+Mat img, imgGray;
+string windowName;
+
 void GuassianSmooth(Mat &img, Mat &result) {
     // Created 5by5 discrete filter for gaussian smooth with standard deviation of 1
     float gauss_data[25] = {1, 4, 7, 4, 1,
@@ -55,37 +58,7 @@ void GradientSobelFilter(Mat &Gblurred, Mat &result_sobel) {
         }
     }
 
-
-}
-
-int main() {
-    // Loading image from KITTI dataset
-    string image_path = "../Data/KITTI/Camera/Data/0000000000.png";
-    Mat img, result, Gblurred;
-    img = imread(image_path);
-
-    //convert to grayscale
-    Mat imgGray;
-    cvtColor(img, imgGray, COLOR_BGR2GRAY);
-
-    if (img.empty()) {
-        cout << "Could not read the image: " << image_path << std::endl;
-        return 1;
-    }
-    // Uncommnent below code block to compare gaussiansmooth result
-/*    // Call for gaussian smooth
-
-    GuassianSmooth(imgGray, result);
-    string windowName = "Gaussian Window";
-    imshow(windowName, result);
-*/
-    // Use inbuld gaussian blur function with 5by5 kernel for comparision
-    GaussianBlur(imgGray, Gblurred, {5, 5}, 2);
-    string windowName = "Gaussian Window";
-    imshow(windowName, Gblurred);
-
-    Mat result_sobel;
-    GradientSobelFilter(Gblurred, result_sobel);
+    // visualize results
     windowName = "sobel Filter";
     imshow(windowName, result_sobel);
 
@@ -95,6 +68,77 @@ int main() {
         imwrite("../Output/sobel_filter.png", result_sobel);
         cout << "Image is saved " << std::endl;
     }
+
+
+}
+
+void cornerHarris_detector() {
+    // Detector parameters
+    int blockSize = 2; // for every pixel, a blockSize × blockSize neighborhood is considered
+    int apertureSize = 3; // aperture parameter for Sobel operator (must be odd)
+    int minResponse = 40; // minimum value for a corner in the 8bit scaled response matrix
+    double k = 0.04; // Harris parameter (see equation for details)
+
+    // Detect Harris corners and normalize output
+    cv::Mat dst, dst_norm, dst_norm_scaled;
+    dst = cv::Mat::zeros(imgGray.size(), CV_32FC1);
+    cornerHarris(imgGray, dst, blockSize, apertureSize, k, cv::BORDER_DEFAULT);
+    normalize(dst, dst_norm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat());
+    convertScaleAbs(dst_norm, dst_norm_scaled);
+
+    // visualize results
+    windowName = "Harris Corner Detector Response Matrix";
+    imshow(windowName, dst_norm_scaled);
+    int h = cv::waitKey(0); // Wait for a keystroke in the window
+
+    if (h == 'h') {
+        imwrite("../Output/Harris_detector.png", dst_norm_scaled);
+        cout << "Image is saved " << std::endl;
+    }
+
+}
+
+int main() {
+    // Loading image from KITTI dataset
+    string image_path = "../Data/KITTI/Camera/Data/0000000000.png";
+    Mat result, Gblurred;
+    img = imread(image_path);
+
+    if (img.empty()) {
+        cout << "Could not read the image: " << image_path << std::endl;
+        return 1;
+    }
+
+    //convert to grayscale
+    cvtColor(img, imgGray, COLOR_BGR2GRAY);
+
+    // Uncommnent below code block to compare gaussiansmooth result
+/*    // Call for gaussian smooth
+
+    GuassianSmooth(imgGray, result);
+    string windowName = "Gaussian Window";
+    imshow(windowName, result);
+*/
+    // Use inbuld gaussian blur function with 5by5 kernel for comparision
+    GaussianBlur(imgGray, Gblurred, {5, 5}, 1.5);
+    windowName = "Gaussian Window";
+    imshow(windowName, Gblurred);
+
+    int k = cv::waitKey(0); // Wait for a keystroke in the window
+
+    if (k == 's') {
+        imwrite("../Output/Gaussian_filter.png", Gblurred);
+        cout << "Gaussian Blurr Image is saved " << std::endl;
+    }
+
+    // Sobel operator
+    Mat result_sobel;
+    GradientSobelFilter(Gblurred, result_sobel);
+
+    // Harris corner detector
+    cornerHarris_detector();
+
     return 0;
 }
+
 
