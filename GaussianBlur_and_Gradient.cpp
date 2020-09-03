@@ -16,6 +16,51 @@ using namespace cv;
 Mat img, imgGray;
 string windowName;
 
+Mat gammaCorrection(const Mat &source, const double gamma_) {
+    CV_Assert(gamma_ >= 0);
+    //! [changing-contrast-brightness-gamma-correction]
+    Mat lookUpTable(1, 256, CV_8U);
+    uchar *p = lookUpTable.ptr();
+    for (int i = 0; i < 256; ++i)
+        p[i] = saturate_cast<uchar>(pow(i / 255.0, gamma_) * 255.0);
+
+    Mat res = source.clone();
+    LUT(source, lookUpTable, res);
+    //! [changing-contrast-brightness-gamma-correction]
+    Mat img_gamma_corrected;
+    hconcat(source, res, img_gamma_corrected);
+    //imshow("Gamma correction", img_gamma_corrected);
+    return res;
+}
+
+Mat Brightness_and_Contrast() {
+    double contrast = 3; // between 1.0 - 3.0
+    double brightness = 100; // between 0 - 100
+    double gamma_c = 10;
+    Mat new_image = Mat::zeros(img.size(), img.type());
+
+    for (int row = 0; row < img.rows; row++) {
+        for (int col = 0; col < img.cols; col++) {
+            for (int chnl = 0; chnl < img.channels(); chnl++) {
+                new_image.at<Vec3b>(row, col)[chnl] = saturate_cast<unsigned char>(
+                        img.at<Vec3b>(row, col)[chnl] * contrast + brightness);
+            }
+        }
+    }
+    // Visulalization
+    windowName = "Contrast and Brightness";
+    //imshow(windowName, new_image);
+
+    Mat img_gammaC = gammaCorrection(new_image, gamma_c);
+
+    int k = cv::waitKey(0); // Wait for a keystroke in the window
+
+    if (k == 's') {
+        imwrite("../Output/After_contrastNbrightness.png", img_gammaC);
+        cout << "Image is saved " << std::endl;
+    }
+    return img_gammaC;
+}
 
 void GuassianSmooth(Mat &img, Mat &result) {
     // Created 5by5 discrete filter for gaussian smooth with standard deviation of 1
@@ -68,7 +113,7 @@ void GradientSobelFilter(Mat &Gblurred, Mat &result_sobel) {
     int k = cv::waitKey(0); // Wait for a keystroke in the window
 
     if (k == 's') {
-        imwrite("../Output/sobel_filter.png", result_sobel);
+        imwrite("../Output/Sob_Fil_after_BCR_adjustment.png", result_sobel);
         cout << "Image is saved " << std::endl;
     }
 
@@ -118,7 +163,7 @@ void NMS_local(Mat &dst_norm, Mat &dst_norm_scaled, int &minResponse, int &apert
     int k = cv::waitKey(0); // Wait for a keystroke in the window
 
     if (k == 's') {
-        imwrite("../Output/After_NHS.png", visImage);
+        imwrite("../Output/NHS_after_BCR_adujustment.png", visImage);
         cout << "Image is saved after NHS" << std::endl;
     }
 
@@ -145,7 +190,7 @@ void cornerHarris_detector() {
     int h = cv::waitKey(0); // Wait for a keystroke in the window
 
     if (h == 'h') {
-        imwrite("../Output/Harris_detector.png", dst_norm_scaled);
+        imwrite("../Output/HarrisD_after_BCR_adujustment.png", dst_norm_scaled);
         cout << "Image is saved " << std::endl;
     }
 
@@ -163,9 +208,9 @@ int main() {
         cout << "Could not read the image: " << image_path << std::endl;
         return 1;
     }
-
+    Mat img_CNB = Brightness_and_Contrast();
     //convert to grayscale
-    cvtColor(img, imgGray, COLOR_BGR2GRAY);
+    cvtColor(img_CNB, imgGray, COLOR_BGR2GRAY);
 
     // Uncommnent below code block to compare gaussiansmooth result
 /*    // Call for gaussian smooth
@@ -182,7 +227,7 @@ int main() {
     int k = cv::waitKey(0); // Wait for a keystroke in the window
 
     if (k == 's') {
-        imwrite("../Output/Gaussian_filter.png", Gblurred);
+        imwrite("../Output/GauFil_after_BCR_adjustment.png", Gblurred);
         cout << "Gaussian Blurr Image is saved " << std::endl;
     }
 
