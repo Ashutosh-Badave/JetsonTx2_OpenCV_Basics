@@ -64,7 +64,7 @@ void NMS_local(Mat &dst_norm, Mat &dst_norm_scaled, int &minResponse, int &apert
 
 }
 
-void cornerHarris_detector() {
+void cornerHarris_detector(Mat &src) {
     // Detector parameters
     int blockSize = 2; // for every pixel, a blockSize × blockSize neighborhood is considered
     int apertureSize = 3; // aperture parameter for Sobel operator (must be odd)
@@ -73,8 +73,8 @@ void cornerHarris_detector() {
 
     // Detect Harris corners and normalize output
     Mat dst, dst_norm, dst_norm_scaled;
-    dst = cv::Mat::zeros(imgGray.size(), CV_32FC1);
-    cornerHarris(imgGray, dst, blockSize, apertureSize, k, cv::BORDER_DEFAULT);
+    dst = cv::Mat::zeros(src.size(), CV_32FC1);
+    cornerHarris(src, dst, blockSize, apertureSize, k, cv::BORDER_DEFAULT);
     //normalize(dst, dst_norm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat());
     normalize(dst, dst_norm, 0, 255, cv::NORM_MINMAX);
     convertScaleAbs(dst_norm, dst_norm_scaled);
@@ -102,17 +102,18 @@ int main() {
         cout << "Could not read the image: " << image_path << std::endl;
         return 1;
     }
-    double contrast = 3; // between 1.0 - 3.0
-    double brightness = 100; // between 0 - 100
-    double gamma_c = 10;
+    double contrast = 2.85; // between 1.0 - 3.0
+    double brightness = 80; // between 0 - 100
+    double gamma_c = 8;
+
 
     Mat img_CNB = Brightness_and_Contrast(img, brightness, contrast, gamma_c);
 
     //convert to grayscale
-    cvtColor(img, imgGray, COLOR_BGR2GRAY);
+    cvtColor(img_CNB, imgGray, COLOR_BGR2GRAY);
 
     // Harris corner detector
-    cornerHarris_detector();
+    cornerHarris_detector(dst);
 
     return 0;
 }
