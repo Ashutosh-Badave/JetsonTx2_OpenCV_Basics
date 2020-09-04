@@ -46,7 +46,13 @@ int main() {
     string windowName = "FAST Results";
     namedWindow(windowName, 2);
     imshow(windowName, visImage);
-    waitKey(0);
+    int h = cv::waitKey(0); // Wait for a keystroke in the window
+
+    if (h == 's') {
+        imwrite("../Output/FASTDetector_after_BCG_adjustment.png", visImage);
+        cout << "Image is saved " << std::endl;
+    }
+
 
     return 0;
 }
