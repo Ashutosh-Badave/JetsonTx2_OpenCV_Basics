@@ -14,3 +14,6 @@ target_link_libraries(GaussianBlur_and_Gradient ${OpenCV_LIBS})
 
 add_executable(CornerHarris_NHS CornerHarris_and_NHS.cpp BCR_adjustment.hpp)
 target_link_libraries(CornerHarris_NHS ${OpenCV_LIBS})
+
+add_executable(detector_FAST detectorFAST.cpp BCR_adjustment.hpp)
+target_link_libraries(detector_FAST ${OpenCV_LIBS})
