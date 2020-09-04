@@ -17,7 +17,18 @@ int main() {
     string image_path = "../Data/KITTI/Camera/Data/0000000000.png";
     Mat imgGray;
     Mat img = imread(image_path);
-    cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
+
+    if (img.empty()) {
+        cout << "Could not read the image: " << image_path << std::endl;
+        return 1;
+    }
+    double contrast = 2.8; // between 1.0 - 3.0
+    double brightness = 10; // between 0 - 100
+    double gamma_c = 0.4;
+
+    Mat img_CNB = Brightness_and_Contrast(img, brightness, contrast, gamma_c);
+
+    cvtColor(img_CNB, imgGray, cv::COLOR_BGR2GRAY);
 
     int threshold = 35;   // difference between intensity of the central pixel and pixels of a circle around this pixel
     bool bNMS = true;     // perform non-maxima suppression on keypoints
@@ -30,8 +41,8 @@ int main() {
     t = ((double) getTickCount() - t) / getTickFrequency();
     cout << "FAST with n= " << kptsFAST.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
 
-    Mat visImage = imgGray.clone();
-    drawKeypoints(imgGray, kptsFAST, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    Mat visImage = img.clone();
+    drawKeypoints(img, kptsFAST, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
     string windowName = "FAST Results";
     namedWindow(windowName, 2);
     imshow(windowName, visImage);
